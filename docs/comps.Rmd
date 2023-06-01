@@ -1,5 +1,5 @@
 ---
-title: "cohousing"
+title: "cohousing comps"
 output:
     bookdown::html_document2:
       highlight: zenburn
@@ -55,21 +55,31 @@ scale_fill_continuous <- function(...){
 
 
 # Table formatting
+replace_q <- function(x){
+  x |> replace_na("?")
+}
 
 # Table formatting
 library(kableExtra)
-kablebox <- . %>%
+kablebox <- .  %>% 
+  mutate_all(as.character) %>%
+  mutate_all(replace_q) %>%
   slice_head(n = 100) %>%
   knitr::kable() %>%
   kable_styling() %>%
   scroll_box(height = "400px")
 ```
 
-```{r eval=F}
+I'm compiling comps data in [this google sheet](https://docs.google.com/spreadsheets/d/1p9XG_h6bDkcHINCmrU-MX_cS5295tX7acTKX56SOM-A/edit#gid=0).
+
+```{r eval=F, include=FALSE}
 library(googledrive)
 library(googlesheets4)
 drive_auth()
 d <- drive_get("https://docs.google.com/spreadsheets/d/1p9XG_h6bDkcHINCmrU-MX_cS5295tX7acTKX56SOM-A/edit#gid=0") %>% read_sheet()
+
+d <- d |> mutate(level = replace_na(level, "?"))
+
 
 write_csv(d, file = "data/comps.csv")
 ```
@@ -78,9 +88,9 @@ write_csv(d, file = "data/comps.csv")
 ```{r comps-by-bath-and-level}
 d <- read_csv("data/comps.csv")
 
-d <- d |> mutate(level = replace_na(level, "?"))
-
 d |> kablebox()
+
+
 
 d |>
   distinct(unit, year, sold, level, bath) |>

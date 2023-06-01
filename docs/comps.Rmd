@@ -25,7 +25,7 @@ knitr::opts_chunk$set(echo = TRUE, # echo = TRUE means that code will show
                       fig.align='center',
                       fig.cap = '   ',
                       fig.retina = 3,
-                      fig.height = 4,
+                      fig.height = 7,
                       fig.width = 4,
                       out.width = "100%",
                       out.extra = "")
@@ -102,7 +102,7 @@ d |>
       y = sold,
       color = level) +
     geom_point(alpha = .5, size = 7) +
-  geom_point(alpha = .7, aes(size = bath), color = "grey") +
+  geom_point(alpha = .7, aes(size = bath), color = "black", fill = NA, shape = 1) +
   geom_text_repel() +
   labs(title = "Comps for Touchstone #26",
        caption = "t = Touchstone, g = Great Oak, s = Sunward") + 

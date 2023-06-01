@@ -84,6 +84,7 @@ d <- d |> mutate(level = replace_na(level, "?"))
 write_csv(d, file = "data/comps.csv")
 ```
 
+> Note: Instead of recording the number of bedrooms (the typical measure of space), I'm recording whether these units include the upper level, lower level, or both. This is because pretty much all of the upper-level apartments are the same size, the lower-level units are the same size, and the full townhouse units are the roughly the same size (though they might have been carved up into different numbers of bedrooms). For example, the Touchstone unit #26 that we are looking at has 2 small bedrooms on the main floor (it is a lower-level unit), whereas many others just have one large bedroom on the main (lower) level.
 
 ```{r comps-by-bath-and-level}
 d <- read_csv("data/comps.csv")

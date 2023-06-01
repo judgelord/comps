@@ -103,11 +103,13 @@ d |>
       color = level) +
     geom_point(alpha = .5, size = 7) +
   geom_point(alpha = .7, aes(size = bath), color = "black", fill = NA, shape = 1) +
-  geom_text_repel() +
+  geom_text_repel(force_pull	= .1, nudge_x	=.3) +
   labs(title = "Comps for Touchstone #26",
-       caption = "t = Touchstone, g = Great Oak, s = Sunward") + 
+       caption = "t = Touchstone, g = Great Oak, s = Sunward",
+       y = "Price (Thousands)") + 
   theme(panel.grid.major.x = element_blank(),
-        panel.grid.minor.x = element_blank())
+        panel.grid.minor.x = element_blank()) + 
+    scale_y_continuous(labels=scales::dollar_format(), breaks =  seq(0, 500, 20))
 
 
 ```

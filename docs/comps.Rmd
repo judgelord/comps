@@ -70,7 +70,7 @@ kablebox <- .  %>%
   scroll_box(height = "400px")
 ```
 
-I'm compiling comps data in [this google sheet](https://docs.google.com/spreadsheets/d/1p9XG_h6bDkcHINCmrU-MX_cS5295tX7acTKX56SOM-A/edit#gid=0).
+I'm compiling comps data in [this google sheet](https://docs.google.com/spreadsheets/d/1p9XG_h6bDkcHINCmrU-MX_cS5295tX7acTKX56SOM-A/edit#gid=0) from [these pdfs](https://drive.google.com/drive/folders/1ps376ofdR6IMLjpdOWsQEJ_nAg7zeAAs).
 
 ```{r eval=F, include=FALSE}
 library(googledrive)

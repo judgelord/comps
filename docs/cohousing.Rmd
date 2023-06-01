@@ -1,0 +1,16 @@
+---
+title: "cohousing"
+output: html_document
+date: "2023-06-01"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r eval=F}
+library(googledrive)
+library(googlesheets4)
+
+drive_get("1p9XG_h6bDkcHINCmrU-MX_cS5295tX7acTKX56SOM-A")
+```

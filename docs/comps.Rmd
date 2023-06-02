@@ -26,7 +26,7 @@ knitr::opts_chunk$set(echo = TRUE, # echo = TRUE means that code will show
                       fig.cap = '   ',
                       fig.retina = 3,
                       fig.height = 7,
-                      fig.width = 4,
+                      fig.width = 6,
                       out.width = "100%",
                       out.extra = "")
 
@@ -75,10 +75,12 @@ I'm compiling comps data in [this google sheet](https://docs.google.com/spreadsh
 ```{r eval=F, include=FALSE}
 library(googledrive)
 library(googlesheets4)
-drive_auth()
+drive_auth(email = "devin.jl@gmail.com")
+
 d <- drive_get("https://docs.google.com/spreadsheets/d/1p9XG_h6bDkcHINCmrU-MX_cS5295tX7acTKX56SOM-A/edit#gid=0") %>% read_sheet()
 
-d <- d |> mutate(level = replace_na(level, "?"))
+d <- d |> mutate(level = replace_na(level, "?") %>% 
+                   str_replace("both", "both (townhouse)"))
 
 
 write_csv(d, file = "data/comps.csv")
@@ -95,6 +97,7 @@ d |> kablebox()
 
 d |>
   distinct(unit, year, sold, level, bath) |>
+  drop_na(year) |>
   ggplot() + 
   aes(label = unit,
       x = year,
@@ -106,10 +109,15 @@ d |>
   geom_text_repel(force_pull	= .1, nudge_x	=.3) +
   labs(title = "Comps for Touchstone #26",
        caption = "t = Touchstone, g = Great Oak, s = Sunward",
-       y = "Price (Thousands)") + 
+       y = "Price (Thousands)",
+       x = "",
+       size = "Baths", 
+       color = "Level") + 
   theme(panel.grid.major.x = element_blank(),
-        panel.grid.minor.x = element_blank()) + 
-    scale_y_continuous(labels=scales::dollar_format(), breaks =  seq(0, 500, 20))
+        panel.grid.minor.x = element_blank(),
+        axis.text.x = element_blank()) + 
+    scale_y_continuous(labels=scales::dollar_format(), breaks =  seq(0, 500, 20)) + 
+  facet_wrap("year", nrow = 1, scales = "free_x")
 
 
 ```

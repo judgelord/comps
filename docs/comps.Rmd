@@ -87,6 +87,8 @@ d <- d |> mutate(level = replace_na(level, "?") %>%
 write_csv(d, file = "data/comps.csv")
 ```
 
+
+# By unit type
 > Note: Instead of recording the number of bedrooms (the typical measure of space), I'm recording whether these units include the upper level, lower level, or both. This is because pretty much all of the upper-level apartments are the same size, the lower-level units are the same size, and the full townhouse units are the roughly the same size (though they might have been carved up into different numbers of bedrooms). For example, the Touchstone unit #26 that we are looking at has 2 small bedrooms on the main floor (it is a lower-level unit), whereas many others just have one large bedroom on the main (lower) level.
 
 ```{r comps-by-bath-and-level}
@@ -120,6 +122,11 @@ d |>
         axis.text.x = element_blank()) + 
     scale_y_continuous(labels=scales::dollar_format(), breaks =  seq(0, 500, 20)) +  facet_wrap("year", nrow = 1, scales = "free_x")
 
+````
+
+# By square feet 
+
+```{r comps-by-bath-and-sqft}
 
 
 d |>
@@ -159,11 +166,18 @@ m2 <- lm(price ~ level + year +`sq ft` + bath,
         data = d)
 
 
-tibble(
-  unit = d$unit,
-  estimate = predict(m) |> round() |> paste("Thousand")
-) |> 
-  kablebox()
+m3 <- lm(price ~ level + year +`sq ft` + bath + `finished basement`,
+        data = d)
+
+m4 <- lm(price ~ level + year +`sq ft` + bath + garadge,
+        data = d)
+
+
+# tibble(
+#   unit = d$unit,
+#   estimate = predict(m) |> round() |> paste("Thousand")
+# ) |> 
+#   kablebox()
 
 
 library(marginaleffects)
@@ -184,7 +198,7 @@ pred <- function(m){
 p <- predictions(m, t26) 
 
 # for all models 
-models <- list(m, m1, m2) 
+models <- list(m, m1, m2, m3, m4) 
 
 p <- map_df(models, pred)
 
@@ -198,7 +212,9 @@ p |>
   geom_pointrange(aes(ymin = conf.low,
                   ymax = conf.high), 
                   alpha = .7,
-                  position = position_dodge(width = .5)) 
+                  position = position_dodge(width = .5)) +
+  coord_flip() + 
+    scale_y_continuous(labels=scales::dollar_format(), breaks =  seq(0, 500, 20)) 
 ```
 
 

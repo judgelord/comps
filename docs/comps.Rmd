@@ -80,8 +80,12 @@ drive_auth(email = "devin.jl@gmail.com")
 
 d <- drive_get("https://docs.google.com/spreadsheets/d/1p9XG_h6bDkcHINCmrU-MX_cS5295tX7acTKX56SOM-A/edit#gid=0") %>% read_sheet()
 
+str_clean <- . %>% str_remove(" .*") %>% as.numeric()
+
 d <- d |> mutate(level = replace_na(level, "?") %>% 
-                   str_replace("both", "both (townhouse)"))
+                   str_replace("both", "both (townhouse)")) |>
+  mutate(across(contains("sq"), str_clean))
+  
 
 
 write_csv(d, file = "data/comps.csv")
@@ -122,7 +126,7 @@ d |>
         axis.text.x = element_blank()) + 
     scale_y_continuous(labels=scales::dollar_format(), breaks =  seq(0, 500, 20)) +  facet_wrap("year", nrow = 1, scales = "free_x")
 
-````
+```
 
 # By square feet 
 
@@ -138,14 +142,59 @@ d |>
       #y = `net value`,
       y = sold,
       color = level) +
-  #geom_smooth(method = "lm", se = FALSE) +
+  geom_smooth(method = "lm", se = TRUE, color = "grey") +
     geom_point(alpha = .5, size = 7) +
   geom_point(alpha = .7, aes(size = bath), color = "black", fill = NA, shape = 1) +
   geom_text_repel(force_pull	= .1, nudge_x	=.3) +
-  labs(title = "Comps for Touchstone #26",
+  labs(title = "Comps for Touchstone #26 by listed sq feet",
        caption = "t = Touchstone, g = Great Oak, s = Sunward",
        y = "Price (Thousands)",
        x = "sq ft",
+       size = "Baths", 
+       color = "") + 
+    scale_y_continuous(labels=scales::dollar_format(), breaks =  seq(0, 500, 20)) 
+
+
+d |>
+  distinct(unit, year, sold, level, bath, `sq ft fin`) |>
+  drop_na(year) |>
+  ggplot() + 
+  aes(label = unit,
+      x = `sq ft fin`,
+      #y = `net value`,
+      y = sold,
+      color = level) +
+  geom_smooth(method = "lm", se = TRUE, color = "grey") +
+    geom_point(alpha = .5, size = 7) +
+  geom_point(alpha = .7, aes(size = bath), color = "black", fill = NA, shape = 1) +
+  geom_text_repel(force_pull	= .1, nudge_x	=.3) +
+  labs(title = "Comps for Touchstone #26 by total sq ft",
+       caption = "t = Touchstone, g = Great Oak, s = Sunward",
+       y = "Price (Thousands)",
+       x = "sq ft total",
+       size = "Baths", 
+       color = "") + 
+    scale_y_continuous(labels=scales::dollar_format(), breaks =  seq(0, 500, 20)) 
+
+
+
+d |>
+  distinct(unit, year, sold, level, bath, `sq ft fin`) |>
+  drop_na(year) |>
+  ggplot() + 
+  aes(label = unit,
+      x = `sq ft fin`,
+      #y = `net value`,
+      y = sold,
+      color = level) +
+  geom_smooth(method = "lm", se = TRUE, color = "grey") +
+    geom_point(alpha = .5, size = 7) +
+  geom_point(alpha = .7, aes(size = bath), color = "black", fill = NA, shape = 1) +
+  geom_text_repel(force_pull	= .1, nudge_x	=.3) +
+  labs(title = "Comps for Touchstone #26 by finished sq feet",
+       caption = "t = Touchstone, g = Great Oak, s = Sunward",
+       y = "Price (Thousands)",
+       x = "sq ft fin",
        size = "Baths", 
        color = "") + 
     scale_y_continuous(labels=scales::dollar_format(), breaks =  seq(0, 500, 20)) 
@@ -170,6 +219,46 @@ m3 <- lm(price ~ level + year +`sq ft` + bath + `finished basement`,
         data = d)
 
 m4 <- lm(price ~ level + year +`sq ft` + bath + garadge,
+        data = d)
+
+m1t <- lm(price ~ level + year +`sq ft total`,
+        data = d)
+
+m2t <- lm(price ~ level + year +`sq ft total` + bath,
+        data = d)
+
+
+m3t <- lm(price ~ level + year +`sq ft total` + bath + `finished basement`,
+        data = d)
+
+m4t <- lm(price ~ level + year +`sq ft total` + bath + garadge,
+        data = d)
+
+# finished sq feet
+m1f <- lm(price ~ level + year +`sq ft fin`,
+        data = d)
+
+m2f <- lm(price ~ level + year +`sq ft fin` + bath,
+        data = d)
+
+
+m3f <- lm(price ~ level + year +`sq ft fin` + bath + `finished basement`,
+        data = d)
+
+m4f <- lm(price ~ level + year +`sq ft fin` + bath + garadge,
+        data = d)
+
+m1s <- lm(price ~ level + year +`sq ft` +`sq ft total` +`sq ft fin`,
+        data = d)
+
+m2s <- lm(price ~ level + year +`sq ft` +`sq ft total` +`sq ft fin`+ bath,
+        data = d)
+
+
+m3s <- lm(price ~ level + year +`sq ft` +`sq ft total` +`sq ft fin`+ bath + `finished basement`,
+        data = d)
+
+m4s <- lm(price ~ level + year +`sq ft` +`sq ft total` +`sq ft fin`+ bath + garadge,
         data = d)
 
 
@@ -198,7 +287,10 @@ pred <- function(m){
 p <- predictions(m, t26) 
 
 # for all models 
-models <- list(m, m1, m2, m3, m4) 
+models <- list(m, m1, m2, m3, m4,
+               m1t, m2t, m3t, m4t,
+               m1f, m2f, m3f, m4f,
+               m1s, m2s, m3s, m4s) 
 
 p <- map_df(models, pred)
 

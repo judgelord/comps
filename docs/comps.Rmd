@@ -12,6 +12,7 @@ output:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
+library(magrittr)
 library(ggrepel)
 ## Sets defaults for R chunks
 knitr::opts_chunk$set(echo = TRUE, # echo = TRUE means that code will show
@@ -104,6 +105,7 @@ d |>
       #y = `net value`,
       y = sold,
       color = level) +
+  #geom_smooth(method = "lm", se = FALSE) +
     geom_point(alpha = .5, size = 7) +
   geom_point(alpha = .7, aes(size = bath), color = "black", fill = NA, shape = 1) +
   geom_text_repel(force_pull	= .1, nudge_x	=.3) +
@@ -116,8 +118,105 @@ d |>
   theme(panel.grid.major.x = element_blank(),
         panel.grid.minor.x = element_blank(),
         axis.text.x = element_blank()) + 
-    scale_y_continuous(labels=scales::dollar_format(), breaks =  seq(0, 500, 20)) + 
-  facet_wrap("year", nrow = 1, scales = "free_x")
+    scale_y_continuous(labels=scales::dollar_format(), breaks =  seq(0, 500, 20)) +  facet_wrap("year", nrow = 1, scales = "free_x")
 
 
+
+d |>
+  distinct(unit, year, sold, level, bath, `sq ft`) |>
+  drop_na(year) |>
+  ggplot() + 
+  aes(label = unit,
+      x = `sq ft`,
+      #y = `net value`,
+      y = sold,
+      color = level) +
+  #geom_smooth(method = "lm", se = FALSE) +
+    geom_point(alpha = .5, size = 7) +
+  geom_point(alpha = .7, aes(size = bath), color = "black", fill = NA, shape = 1) +
+  geom_text_repel(force_pull	= .1, nudge_x	=.3) +
+  labs(title = "Comps for Touchstone #26",
+       caption = "t = Touchstone, g = Great Oak, s = Sunward",
+       y = "Price (Thousands)",
+       x = "sq ft",
+       size = "Baths", 
+       color = "") + 
+    scale_y_continuous(labels=scales::dollar_format(), breaks =  seq(0, 500, 20)) 
+```
+
+# Linear regression estimates
+
+```{r, predicted-price, fig.width=7, fig.height=3}
+d$price <- d$`net value`
+
+m <- lm(price ~ level + year,
+        data = d)
+
+m1 <- lm(price ~ level + year +`sq ft`,
+        data = d)
+
+m2 <- lm(price ~ level + year +`sq ft` + bath,
+        data = d)
+
+
+tibble(
+  unit = d$unit,
+  estimate = predict(m) |> round() |> paste("Thousand")
+) |> 
+  kablebox()
+
+
+library(marginaleffects)
+
+t26 = d |> filter(unit == "t26") 
+
+library(purrr)
+
+# function to extract estimates for Touchstone 26
+pred <- function(m){
+  predictions(m, t26, conf_level = .2) |> 
+    tidy() |>
+    mutate(model = m$call[2] |> as.character())
+}
+
+
+# for base model 
+p <- predictions(m, t26) 
+
+# for all models 
+models <- list(m, m1, m2) 
+
+p <- map_df(models, pred)
+
+p <- p |> select(estimate, conf.low, conf.high, model) |> mutate_if(is.numeric, round)
+
+p |> kablebox()
+
+p |> 
+  ggplot() + 
+  aes(y = estimate, x = model) + 
+  geom_pointrange(aes(ymin = conf.low,
+                  ymax = conf.high), 
+                  alpha = .7,
+                  position = position_dodge(width = .5)) 
+```
+
+
+```{r, eval = FALSE}
+library(ggdist)
+library(broom)
+library(dplyr)
+library(tidyr)
+library(ggdist)
+library(ggplot2)
+library(broom)
+library(modelr)
+library(distributional)
+
+m %>% 
+ tidy() %>%
+  ggplot(aes(y = term)) +
+  stat_halfeye(
+    aes(xdist = dist_student_t(df = df.residual(m), mu = estimate, sigma = std.error))
+  )
 ```

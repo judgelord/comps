@@ -200,7 +200,7 @@ d |>
     scale_y_continuous(labels=scales::dollar_format(), breaks =  seq(0, 500, 20)) 
 ```
 
-# Linear regression estimates
+# Linear regression estimates for #26
 
 ```{r, predicted-price, fig.width=7, fig.height=3}
 d$price <- d$`net value`
@@ -296,17 +296,20 @@ p <- map_df(models, pred)
 
 p <- p |> select(estimate, conf.low, conf.high, model) |> mutate_if(is.numeric, round)
 
-p |> kablebox()
 
 p |> 
   ggplot() + 
-  aes(y = estimate, x = model) + 
+  aes(y = estimate, x = model) +
+  geom_hline(yintercept = 369, color = "red")+ 
   geom_pointrange(aes(ymin = conf.low,
                   ymax = conf.high), 
                   alpha = .7,
                   position = position_dodge(width = .5)) +
   coord_flip() + 
-    scale_y_continuous(labels=scales::dollar_format(), breaks =  seq(0, 500, 20)) 
+    scale_y_continuous(labels=scales::dollar_format(), breaks =  seq(0, 500, 20))  
+
+p |> kablebox()
+
 ```
 
 
